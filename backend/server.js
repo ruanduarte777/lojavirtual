@@ -18,7 +18,12 @@ function exigirAdmin(req, res, next) {
   next();
 }
 
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+app.options("*", cors());
 app.use(express.json());
 
 // Serve imagens do seu projeto (pasta assets na raiz)
