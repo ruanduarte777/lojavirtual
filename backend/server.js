@@ -24,7 +24,6 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.options("/*", cors());
 app.use(express.json());
 
 // Serve imagens do seu projeto (pasta assets na raiz)
