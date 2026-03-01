@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3000";
+const API_URL = window.location.hostname.includes("github.io")
+  ? "https://lojavirtual-production.up.railway.app"
+  : "http://localhost:3000";
 const cartItemsEl = document.querySelector("#cartItems");
 const totalEl = document.querySelector("#total");
 const whatsappBtn = document.querySelector("#whatsappBtn");
@@ -203,7 +205,7 @@ whatsappBtn.addEventListener("click", async () => {
 
     // ✅ use /?text= (wa.me)
     const link = `https://wa.me/${WHATSAPP_NUMERO}?text=${texto}`;
-    window.open(link, "_blank");
+    window.location.href = link;
 
     // limpar carrinho (opcional)
     carrinho = [];
