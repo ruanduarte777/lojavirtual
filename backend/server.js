@@ -18,11 +18,13 @@ function exigirAdmin(req, res, next) {
   next();
 }
 
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 
@@ -65,6 +67,7 @@ app.get("/api/produtos/:id", async (req, res) => {
     res.status(500).json({ error: "Erro ao buscar produto" });
   }
 });
+
 // 🔒 ADMIN - listar TODOS produtos (ativos e inativos)
 app.get("/api/admin/produtos", exigirAdmin, async (req, res) => {
   try {
@@ -131,6 +134,8 @@ app.patch("/api/admin/produtos/:id", exigirAdmin, async (req, res) => {
     res.status(500).json({ error: "Erro ao atualizar produto" });
   }
 });
+
+// 🔒 ADMIN - listar pedidos (com filtro opcional)
 app.get("/api/pedidos", exigirAdmin, async (req, res) => {
   try {
     const { status } = req.query;
@@ -143,7 +148,7 @@ app.get("/api/pedidos", exigirAdmin, async (req, res) => {
     const pedidos = await prisma.pedido.findMany({
       where,
       orderBy: { criadoEm: "desc" },
-      include: { itens: true },
+      include: { itens: true }, // ✅ mantém "itens"
     });
 
     res.json(pedidos);
@@ -152,6 +157,7 @@ app.get("/api/pedidos", exigirAdmin, async (req, res) => {
     res.status(500).json({ error: "Erro ao buscar pedidos" });
   }
 });
+
 // ✅ RESUMO (DASHBOARD) - métricas do admin
 app.get("/api/admin/resumo", exigirAdmin, async (req, res) => {
   try {
@@ -204,10 +210,12 @@ app.get("/api/admin/resumo", exigirAdmin, async (req, res) => {
     res.status(500).json({ error: "Erro ao gerar resumo" });
   }
 });
-const PORT = process.env.PORT || 3000;
+
+// ✅ CRIAR PEDIDO (cliente)
 app.post("/api/pedidos", async (req, res) => {
   try {
-    const { pagamento, itens, total, nomeCliente, telefone } = req.body;
+    // ✅ pega "total" do body (não pega totalFinal pra não duplicar)
+    const { pagamento, total, nomeCliente, telefone, endereco, itens } = req.body;
 
     if (!pagamento) return res.status(400).json({ error: "Pagamento é obrigatório" });
     if (!Array.isArray(itens) || itens.length === 0) {
@@ -215,7 +223,11 @@ app.post("/api/pedidos", async (req, res) => {
     }
 
     // (opcional) valida total no servidor:
-    const totalCalculado = itens.reduce((acc, i) => acc + (Number(i.preco) * Number(i.quantidade)), 0);
+    const totalCalculado = itens.reduce(
+      (acc, i) => acc + Number(i.preco) * Number(i.quantidade),
+      0
+    );
+
     const totalFinal = Number.isFinite(Number(total)) ? Number(total) : totalCalculado;
 
     const pedido = await prisma.pedido.create({
@@ -224,7 +236,12 @@ app.post("/api/pedidos", async (req, res) => {
         total: totalFinal,
         nomeCliente: nomeCliente || null,
         telefone: telefone || null,
-        itens: {
+        endereco: endereco || null, // ✅ salva endereco
+
+        // ✅ mantém a relação como "itens" no include/findMany,
+        // mas na criação do Prisma o seu schema pode estar como "items" ou "itens".
+        // Pelo seu print antigo estava "items". Se no seu schema for "itens", troque "items" por "itens" aqui.
+        items: {
           create: itens.map((i) => ({
             produtoId: Number(i.id),
             nome: String(i.nome),
@@ -234,7 +251,7 @@ app.post("/api/pedidos", async (req, res) => {
           })),
         },
       },
-      include: { itens: true },
+      include: { itens: true }, // ✅ retorna itens
     });
 
     res.status(201).json(pedido);
@@ -244,6 +261,7 @@ app.post("/api/pedidos", async (req, res) => {
   }
 });
 
+// 🔒 ADMIN - atualizar status do pedido
 app.patch("/api/pedidos/:id/status", exigirAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -265,6 +283,8 @@ app.patch("/api/pedidos/:id/status", exigirAdmin, async (req, res) => {
     res.status(500).json({ error: "Erro ao atualizar status" });
   }
 });
+
+// 🔒 ADMIN - login
 app.post("/api/admin/login", (req, res) => {
   const { senha } = req.body;
 
@@ -277,6 +297,8 @@ app.post("/api/admin/login", (req, res) => {
   // token simples (MVP)
   res.json({ token: process.env.ADMIN_TOKEN });
 });
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ API rodando na porta ${PORT}`);
 });

@@ -1,11 +1,17 @@
 const API_URL = window.location.hostname.includes("github.io")
   ? "https://lojavirtual-production.up.railway.app"
   : "http://localhost:3000";
+
 const cartItemsEl = document.querySelector("#cartItems");
 const totalEl = document.querySelector("#total");
 const whatsappBtn = document.querySelector("#whatsappBtn");
 const clearCartBtn = document.querySelector("#clearCartBtn");
 const paymentSelect = document.querySelector("#paymentSelect");
+
+// ✅ Campos (precisam existir no carrinho.html)
+const nomeClienteInput = document.querySelector("#nomeCliente");
+const telefoneInput = document.querySelector("#telefone");
+const enderecoInput = document.querySelector("#endereco");
 
 // ✅ TROQUE AQUI PELO WHATSAPP DA VENDEDORA (55 + DDD + número, sem espaços)
 const WHATSAPP_NUMERO = "5597984588022";
@@ -17,32 +23,45 @@ let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 let pagamento = localStorage.getItem("pagamento") || "Pix";
 paymentSelect.value = pagamento;
 
-function salvarCarrinho(){
+// Dados do cliente salvos (pra não perder quando atualizar/voltar)
+function carregarDadosCliente() {
+  if (nomeClienteInput) nomeClienteInput.value = localStorage.getItem("nomeCliente") || "";
+  if (telefoneInput) telefoneInput.value = localStorage.getItem("telefone") || "";
+  if (enderecoInput) enderecoInput.value = localStorage.getItem("endereco") || "";
+}
+
+function salvarDadosCliente() {
+  if (nomeClienteInput) localStorage.setItem("nomeCliente", nomeClienteInput.value || "");
+  if (telefoneInput) localStorage.setItem("telefone", telefoneInput.value || "");
+  if (enderecoInput) localStorage.setItem("endereco", enderecoInput.value || "");
+}
+
+function salvarCarrinho() {
   localStorage.setItem("carrinho", JSON.stringify(carrinho));
 }
 
-function formatarPreco(valor){
+function formatarPreco(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function calcularTotal(){
+function calcularTotal() {
   return carrinho.reduce((acc, item) => acc + item.preco * item.quantidade, 0);
 }
 
-function removerItem(id){
-  carrinho = carrinho.filter(item => item.id !== id);
+function removerItem(id) {
+  carrinho = carrinho.filter((item) => item.id !== id);
   salvarCarrinho();
   atualizarContadorCarrinho();
   renderCarrinho();
 }
 
-function alterarQuantidade(id, delta){
-  const item = carrinho.find(i => i.id === id);
-  if(!item) return;
+function alterarQuantidade(id, delta) {
+  const item = carrinho.find((i) => i.id === id);
+  if (!item) return;
 
   item.quantidade += delta;
 
-  if(item.quantidade <= 0){
+  if (item.quantidade <= 0) {
     removerItem(id);
     return;
   }
@@ -52,10 +71,10 @@ function alterarQuantidade(id, delta){
   renderCarrinho();
 }
 
-function renderCarrinho(){
+function renderCarrinho() {
   cartItemsEl.innerHTML = "";
 
-  if(carrinho.length === 0){
+  if (carrinho.length === 0) {
     cartItemsEl.innerHTML = "<p class='muted'>Seu carrinho está vazio.</p>";
     totalEl.textContent = "";
     whatsappBtn.disabled = true;
@@ -70,7 +89,7 @@ function renderCarrinho(){
   clearCartBtn.disabled = false;
   clearCartBtn.style.opacity = "1";
 
-  carrinho.forEach(item => {
+  carrinho.forEach((item) => {
     const div = document.createElement("div");
     div.classList.add("cartItem");
 
@@ -98,14 +117,14 @@ function renderCarrinho(){
   });
 
   // Eventos dos botões +/-
-  cartItemsEl.querySelectorAll("[data-minus]").forEach(btn => {
+  cartItemsEl.querySelectorAll("[data-minus]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = Number(btn.getAttribute("data-minus"));
       alterarQuantidade(id, -1);
     });
   });
 
-  cartItemsEl.querySelectorAll("[data-plus]").forEach(btn => {
+  cartItemsEl.querySelectorAll("[data-plus]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = Number(btn.getAttribute("data-plus"));
       alterarQuantidade(id, +1);
@@ -115,33 +134,20 @@ function renderCarrinho(){
   totalEl.textContent = "Total: " + formatarPreco(calcularTotal());
 }
 
-function gerarMensagemWhatsApp(){
-  const total = calcularTotal();
-  const formaPagamento = paymentSelect.value;
-
-  let mensagem = "Olá! Quero fazer um pedido 😊%0A%0A";
-  mensagem += "*Itens:*%0A";
-
-  carrinho.forEach(item => {
-    mensagem += `- ${item.nome} (${item.volume}) — ${item.quantidade}x — ${formatarPreco(item.preco * item.quantidade)}%0A`;
-  });
-
-  mensagem += `%0A*Total:* ${formatarPreco(total)}%0A`;
-  mensagem += `*Pagamento:* ${formaPagamento}%0A`;
-  mensagem += "*Entrega:* a combinar%0A";
-
-  return mensagem;
-}
-
 // Salvar pagamento quando mudar
 paymentSelect.addEventListener("change", () => {
   localStorage.setItem("pagamento", paymentSelect.value);
 });
 
+// Salvar dados do cliente quando digitar
+if (nomeClienteInput) nomeClienteInput.addEventListener("input", salvarDadosCliente);
+if (telefoneInput) telefoneInput.addEventListener("input", salvarDadosCliente);
+if (enderecoInput) enderecoInput.addEventListener("input", salvarDadosCliente);
+
 // Limpar carrinho
 clearCartBtn.addEventListener("click", () => {
   const ok = confirm("Tem certeza que deseja limpar o carrinho?");
-  if(!ok) return;
+  if (!ok) return;
 
   carrinho = [];
   salvarCarrinho();
@@ -149,12 +155,26 @@ clearCartBtn.addEventListener("click", () => {
   renderCarrinho();
 });
 
-// Finalizar no WhatsApp
+// ✅ Criar pedido no banco (agora com total + dados + endereco)
 async function criarPedidoNoBanco() {
   const formaPagamento = paymentSelect.value;
+  const total = calcularTotal();
+
+  const nomeCliente = nomeClienteInput ? nomeClienteInput.value.trim() : "";
+  const telefone = telefoneInput ? telefoneInput.value.trim() : "";
+  const endereco = enderecoInput ? enderecoInput.value.trim() : "";
+
+  // validações simples
+  if (!endereco) {
+    throw new Error("Informe o endereço de entrega antes de finalizar.");
+  }
 
   const payload = {
     pagamento: formaPagamento,
+    total, // ✅ manda o total pro backend validar/usar
+    nomeCliente: nomeCliente || null,
+    telefone: telefone || null,
+    endereco: endereco || null, // ✅ manda endereco
     itens: carrinho.map((item) => ({
       id: item.id,
       nome: item.nome,
@@ -182,28 +202,36 @@ whatsappBtn.addEventListener("click", async () => {
   try {
     if (carrinho.length === 0) return;
 
+    // salva dados (garantia)
+    salvarDadosCliente();
+
     const pedido = await criarPedidoNoBanco();
 
     const total = calcularTotal();
     const formaPagamento = paymentSelect.value;
 
-    // ✅ monta mensagem normal com \n
+    const nomeCliente = nomeClienteInput ? nomeClienteInput.value.trim() : "";
+    const telefone = telefoneInput ? telefoneInput.value.trim() : "";
+    const endereco = enderecoInput ? enderecoInput.value.trim() : "";
+
     let mensagem = `Olá! Quero fazer um pedido 😊\n\n`;
     mensagem += `Pedido: #${pedido.id}\n\n`;
     mensagem += `Itens:\n`;
 
-    carrinho.forEach(item => {
-      mensagem += `- ${item.nome} (${item.volume}) — ${item.quantidade}x — ${formatarPreco(item.preco * item.quantidade)}\n`;
+    carrinho.forEach((item) => {
+      mensagem += `- ${item.nome} (${item.volume}) — ${item.quantidade}x — ${formatarPreco(
+        item.preco * item.quantidade
+      )}\n`;
     });
 
     mensagem += `\nTotal: ${formatarPreco(total)}\n`;
     mensagem += `Pagamento: ${formaPagamento}\n`;
-    mensagem += `Entrega: a combinar\n`;
 
-    // ✅ encoda a mensagem inteira
+    if (nomeCliente) mensagem += `Nome: ${nomeCliente}\n`;
+    if (telefone) mensagem += `Telefone: ${telefone}\n`;
+    mensagem += `Endereço: ${endereco}\n`;
+
     const texto = encodeURIComponent(mensagem);
-
-    // ✅ use /?text= (wa.me)
     const link = `https://wa.me/${WHATSAPP_NUMERO}?text=${texto}`;
     window.location.href = link;
 
@@ -212,10 +240,11 @@ whatsappBtn.addEventListener("click", async () => {
     salvarCarrinho();
     atualizarContadorCarrinho();
     renderCarrinho();
-
   } catch (e) {
     alert(e.message);
   }
 });
 
+// Inicialização
+carregarDadosCliente();
 renderCarrinho();

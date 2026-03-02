@@ -26,6 +26,7 @@ model Pedido {
   total       Float
   status      String       @default("NOVO")
   criadoEm    DateTime     @default(now())
+  endereco    String?
 
   itens       PedidoItem[]
 }
