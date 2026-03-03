@@ -625,3 +625,221 @@ background: #000;
   gap: 10px;
   align-items: center;
 }
+/* ===== CATÁLOGO PREMIUM ===== */
+
+#productGrid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap:18px;
+}
+
+@media (max-width: 1100px){
+  #productGrid{ grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 820px){
+  #productGrid{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px){
+  #productGrid{ grid-template-columns: 1fr; }
+}
+
+.produto-card{
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.produto-card:hover{
+  transform: translateY(-6px);
+  border-color: rgba(255,255,255,0.22);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.55);
+}
+
+.produto-img{
+  width:100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;        /* 🔥 preenche tudo */
+  display:block;
+  object-position: center 35%;
+}
+
+.produto-body{
+  padding:14px 14px 16px;
+}
+
+.produto-top{
+  display:flex;
+  justify-content: space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.produto-nome{
+  font-weight:700;
+  font-size:15px;
+  line-height:1.2;
+}
+
+.produto-meta{
+  margin-top:6px;
+  color: rgba(255,255,255,0.70);
+  font-size:13px;
+}
+
+.produto-preco{
+  font-weight:800;
+  font-size:16px;
+  white-space: nowrap;
+}
+
+.produto-actions{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
+
+.produto-btn{
+  flex:1;
+  border:none;
+  border-radius: 12px;
+  padding:10px 12px;
+  cursor:pointer;
+  font-weight:800;
+  transition: opacity .2s ease, transform .2s ease;
+  background: linear-gradient(135deg, #c6a95d, #a88c45);
+  color:#111;
+}
+
+.produto-btn:hover{
+  opacity:.9;
+  transform: translateY(-1px);
+}
+
+.badge-volume{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius: 999px;
+  font-size:12px;
+  color: rgba(255,255,255,0.80);
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.25);
+}
+/* ===== EFEITO ZOOM PREMIUM ===== */
+
+.produto-card{
+  overflow: hidden;
+}
+
+.produto-img{
+  transition: transform .4s ease;
+}
+
+.produto-card:hover .produto-img{
+  transform: scale(1.05);
+}
+
+/* ===== TÍTULO MAIS LUXUOSO ===== */
+
+.produto-nome{
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+/* ===== MOBILE PREMIUM (cole no final do style.css) ===== */
+
+/* Melhor leitura + toque */
+@media (max-width: 600px){
+  body{
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .container{
+    width: 92%;
+  }
+
+  .section{
+    padding-top: 18px;
+    padding-bottom: 22px;
+  }
+
+  h1{
+    font-size: 22px;
+    margin-bottom: 8px;
+    letter-spacing: .2px;
+  }
+
+  .muted{
+    line-height: 1.45;
+  }
+
+  /* Botões maiores (dedo) */
+  .btn, .btn--small{
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+
+  /* Header mais compacto e consistente */
+  .header__content{
+    gap: 12px;
+  }
+
+  .logo img{
+    height: 34px;
+    width: auto;
+  }
+
+  /* Nav: vira “scroll horizontal” bonito (não quebra linha feia) */
+  .nav{
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar{ display:none; }
+
+  .nav a{
+    white-space: nowrap;
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+
+  /* Catálogo: 2 colunas bem encaixadas */
+  #productGrid{
+    gap: 14px;
+  }
+
+  /* Card premium mais “apertado” no mobile */
+  .produto-body{
+    padding: 12px 12px 14px;
+  }
+
+  .produto-nome{
+    font-size: 13px;
+  }
+
+  .produto-meta{
+    font-size: 12px;
+  }
+
+  .produto-preco{
+    font-size: 14px;
+  }
+
+  .produto-btn{
+    padding: 12px 12px;
+    border-radius: 14px;
+  }
+}
+
+/* Em telas muito pequenas: 1 coluna pra não esmagar */
+@media (max-width: 380px){
+  #productGrid{
+    grid-template-columns: 1fr !important;
+  }
+}
