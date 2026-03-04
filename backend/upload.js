@@ -7,7 +7,7 @@ const router = express.Router();
 // Multer em memória (não grava no disco)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 6 * 1024 * 1024 }, // 6MB
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
 });
 
 router.post("/", upload.single("imagem"), async (req, res) => {
@@ -23,7 +23,7 @@ router.post("/", upload.single("imagem"), async (req, res) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           folder: "lojavirtual",
-          resource_type: "image",
+          resource_type: "auto",
           transformation: [{ quality: "auto" }, { fetch_format: "auto" }],
         },
         (error, uploadResult) => {
