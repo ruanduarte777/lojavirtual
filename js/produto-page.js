@@ -1,5 +1,5 @@
 const SITE_BASE = window.location.hostname.includes("github.io")
-  ? `https://${window.location.host}/lojavirtual`
+  ? `https://${window.location.host}/lojavirtual/`
   : "";
 
 function isUrlCompleta(s) {
@@ -10,12 +10,21 @@ function resolverImagem(img) {
   if (!img) return "";
   if (isUrlCompleta(img)) return img; // Cloudinary etc.
 
-  // se vier "/assets/..." no GitHub Pages precisa do "/lojavirtual"
-  if (window.location.hostname.includes("github.io") && img.startsWith("/")) {
-    return `${SITE_BASE}${img}`;
+  // normaliza
+  let path = img.trim();
+
+  // remove "./"
+  if (path.startsWith("./")) path = path.slice(2);
+
+  // Se for "assets/..." (sem barra), no GitHub Pages precisa virar ".../lojavirtual/assets/..."
+  if (window.location.hostname.includes("github.io")) {
+    // se já vier "/assets/..." tira a barra pra não quebrar a concatenação
+    if (path.startsWith("/")) path = path.slice(1);
+    return `${SITE_BASE}${path}`;
   }
 
-  return img; // local ou caminho relativo
+  // local: devolve como está
+  return img;
 }
 
 const params = new URLSearchParams(window.location.search);
