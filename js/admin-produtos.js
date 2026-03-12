@@ -333,24 +333,34 @@ function setSalvarLoading(isLoading, texto = "Salvar") {
   salvarBtn.textContent = isLoading ? texto : "Salvar";
 }
 // eventos
-reloadBtn.addEventListener("click", () => carregarProdutosAdmin());
+reloadBtn.addEventListener("click", () => {
+  carregarProdutosAdmin().catch((e) => {
+    console.error(e);
+    alert(e.message || "Erro ao atualizar produtos");
+  });
+});
+
 novoBtn.addEventListener("click", () => abrirFormNovo());
 cancelarBtn.addEventListener("click", fecharForm);
-salvarBtn.addEventListener("click", () => salvarProduto().catch((e) => (formMsg.textContent = e.message)));
+
+salvarBtn.addEventListener("click", () => {
+  salvarProduto().catch((e) => {
+    console.error(e);
+    formMsg.textContent = e.message || "Erro ao salvar produto";
+  });
+});
 
 buscaEl.addEventListener("input", render);
 filtroAtivoEl.addEventListener("change", render);
 
-// ✅ Preview quando escolher arquivo
 f_imagemFile?.addEventListener("change", atualizarPreviewArquivo);
 
 logoutBtn?.addEventListener("click", () => {
   localStorage.removeItem("admin_token");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 });
 
-// Mantive como você tinha (mesmo estando duplicado)
-logoutBtn?.addEventListener("click", () => {
-  localStorage.removeItem("admin_token");
-  window.location.href = "index.html";
+carregarProdutosAdmin().catch((e) => {
+  console.error(e);
+  alert(e.message || "Erro ao carregar painel admin");
 });
