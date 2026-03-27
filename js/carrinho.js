@@ -14,7 +14,7 @@ const telefoneInput = document.querySelector("#telefone");
 const enderecoInput = document.querySelector("#endereco");
 
 // ✅ TROQUE AQUI PELO WHATSAPP DA VENDEDORA (55 + DDD + número, sem espaços)
-const WHATSAPP_NUMERO = "5597984588022";
+const WHATSAPP_NUMERO = "5597991758603";
 
 // Carrinho salvo
 let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];

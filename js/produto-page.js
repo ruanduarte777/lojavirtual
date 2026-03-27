@@ -88,7 +88,7 @@ async function carregarProduto() {
     const whats = document.getElementById("btnWhats");
     if (whats) {
       const msg = `Olá! Quero comprar *${p.nome}* por ${formatBRL(p.preco)}.`;
-      whats.href = `https://wa.me/5597984588022?text=${encodeURIComponent(msg)}`;
+      whats.href = `https://wa.me/5597991758603?text=${encodeURIComponent(msg)}`;
     }
 
   } catch (err) {
